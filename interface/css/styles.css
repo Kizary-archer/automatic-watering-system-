@@ -23,7 +23,6 @@ justify-content:space-between;
 .menu span
 {
   background-color: rgb(148, 73, 222);
-  padding: 0 50px 0 50px;
   font-size: 15pt;
 }
 .infoblocks
@@ -48,7 +47,6 @@ justify-content:space-between;
 {
 display: flex;
 flex:0 0 100%;
-background-color: rgb(176, 237, 106);
 justify-content:center;
 align-items: center;
 align-content:center;
@@ -56,10 +54,10 @@ align-content:center;
 .sliders p
 {
   width: 90%;
-  padding: 20px 20px 20px 20px;
-  margin: 20px 20px 20px 20px;
+  padding: 20px 0px 20px 0px;
+  margin: 20px 10px 20px 10px;
   border-radius: 10px;
-  background-color: rgb(101, 183, 242);
+  background: linear-gradient(45deg, #f0d9c9, #0da8ee);
 }
 .sliders input
 {
