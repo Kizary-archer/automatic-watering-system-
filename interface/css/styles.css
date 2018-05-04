@@ -28,19 +28,17 @@ border-radius: 0 0 15px 15px;
 .infoblocks
 {
   display: flex;
-  flex:0 0 100%;
-  background-color: rgb(158, 240, 217);
-  justify-content: space-around;
+  justify-content: center;
   align-content:space-around;
   flex-wrap: wrap-reverse;
+  background-color: rgb(115, 217, 157)
 }
-.infoblocks div
+.infoblocks>div
 {
   display: flex;
-  flex: 0 0 40%;
-  min-width: 300px;
-  height: 200px;
-  background-color: rgb(20, 91, 230);
+  flex: 0 0 300px;
+  background-color: rgb(226, 179, 109);
+  border-radius: 20px;
 
 }
 .sliders
@@ -59,4 +57,16 @@ align-content:center;
   margin: 20px 10px 20px 10px;
   border-radius: 10px;
   background: linear-gradient(45deg, #f0d9c9, #0da8ee);
+}
+.demo-list-control {
+  width: 300px;
+}
+
+.demo-list-radio {
+  display: inline;
+}
+select
+{
+background-color: rgb(245, 237, 184);
+border-radius:5px;
 }
