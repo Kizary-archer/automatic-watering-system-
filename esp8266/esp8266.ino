@@ -40,7 +40,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
             // webSocket.sendTXT(num, "message here");
 
             // send data to all connected clients
-            // webSocket.broadcastTXT("message here");
+             webSocket.broadcastTXT("message here");
             break;
         case WStype_BIN:
             USE_SERIAL.printf("[%u] get binary length: %u\n", num, length);
@@ -70,7 +70,7 @@ void setup() {
         delay(1000);
     }
 
-    WiFiMulti.addAP("dlink9321", "19311933af");
+    WiFiMulti.addAP("name", "pass");
 
     while(WiFiMulti.run() != WL_CONNECTED) {
         delay(100);
