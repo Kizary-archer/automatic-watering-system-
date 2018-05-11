@@ -1,0 +1,45 @@
+{
+  "requires": true,
+  "lockfileVersion": 1,
+  "name": "package.json",
+  "version": "1.0.0",
+  "main": "",
+  "description": "exampleNode",
+  "author": "Kizari",
+  "license": "ISC",
+  "scripts": {
+    "test": "echo 'Error: no test specified' && exit 1",
+    "start": "",
+    "nodemon": "nodemon",
+    "bsi": "browser-sync init",
+    "bs": "browser-sync start --files '*.html'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kizary-archer/automatic_watering_system.git"
+  },
+  "dependencies": {
+    "bootstrap": "^4.1.1",
+    "jquery": "^3.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.9.0",
+  },
+  "eslintConfig": {
+    "extends": "airbnb-base",
+    "env": {
+      "browser": true,
+      "node": true
+    },
+    "rules": {
+      "no-plusplus": [
+        "error",
+        {
+          "allowForLoopAfterthoughts": true
+        }
+      ]
+    }
+  }
+}
