@@ -1,24 +1,197 @@
-<html>
-<head>
-  <link rel="stylesheet" href="node_modules\material-design-lite\material.min.css">
-  <script src="node_modules\material-design-lite\material.min.js"></script>
-  <link rel="stylesheet" href="css\styles.css">
-</head>
-<body>
-  <div class="conteiner">
-    <div class="menu"><span>saas</span><span>aas</span>
-    </div>
-    <div class="sliders"><p >
-<input class="mdl-slider mdl-js-slider" type="range" id="s1" min="0" max="10" step="1ui">
-</p></div>
-    <div class="infoblocks">
-      <div >
+<!DOCTYPE html>
+<html lang="en">
 
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="icon" type="image/png" href="./imgs/favicon.png">
+    <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="./libs/ipInput.min.css">
+    <link rel="stylesheet" href="./index.css">
+  </head>
+
+  <body>
+
+
+    <!-- error modal -->
+    <!-- <button type="button" class="btn btn-primary" onclick="errorAlert('6565')">Small modal</button> -->
+    <div id="errorModal" class="modal fade " tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div id="errorText" class="alert alert-danger" role="alert"></div>
       </div>
-    <div >
+    </div>
+
+    <!-- login card -->
+    <div id="loginCard">
+      <div class="card mx-auto shadow rounded" style="width: 350px;">
+        <div class="card-header">
+          <img src="./imgs/flower.png" alt="flower" class="logo float-left">
+          <h3>Сonnect to a microcontroller</h3>
+        </div>
+        <div class="card-body">
+          <form id="loginForm">
+
+            <div class="form-group">
+
+              <label for="ip text-left">IP Adress</label>
+              <div id="ip">
+                <div class="ip-input-container">
+                  <input type="text" class="ip-input-item">
+                  <i class="ip-input-dot"></i>
+                  <input type="text" class="ip-input-item">
+                  <i class="ip-input-dot"></i>
+                  <input type="text" class="ip-input-item">
+                  <i class="ip-input-dot"></i>
+                  <input type="text" class="ip-input-item">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" class="form-control" id="password" placeholder="Password">
+            </div>
+
+            <button type="button" class="btn btn-primary btn-block" onclick="connect()">Connect</button>
+
+          </form>
+
+          <img id="loadingConnect" src="./imgs/loading.svg" alt="loading" width="150px" style="display: none;"
+            class="card-img-top">
+        </div>
+      </div>
+    </div>
+
+    <!-- dashboard -->
+    <div id="dashboard" class="shadow rounded" style="display:none;">
+
+      <!-- navbar -->
+      <nav class="navbar navbar-light bg-light">
+        <span class="navbar-brand">
+          <img id="loadingSend" src="./imgs/loading.svg" alt="loading" width="60px" style="display: none;" class="float-left">
+          <img id="logo" src="./imgs/flower.png" alt="flower" class="logo float-left">
+          <b>
+            <span id="modelText"></span> 
+            <br>
+            <span id="ipText"></span>
+          </b>
+        </span>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav"
+          aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <form class="form-inline justify-content-end">
+            <button class="btn btn-outline-danger" type="button" onclick="disconnect()">Disconnect</button>
+          </form>
+        </div>
+      </nav>
+      <br>
+
+      <!-- body -->
+      <div class="container">
+        <div class="row">
+
+          <button type="button" class="btn btn-primary" onclick="socket.send('test')">SEND string</button>
+          <button type="button" class="btn btn-primary" onclick="socket.send(555)">SEND number</button>
+
+          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Et labore ea temporibus cupiditate
+            ad saepe, quas ipsam amet, odio perferendis veniam? Veritatis minima quo, culpa omnis iusto
+            nemo doloribus deserunt!
+          </p>
+        </div>
+
+        <div class="row">
+          <div class="col">
+              
+            <div class="progress">
+              <div id="progress-comlete" class="progress-bar progress-bar-striped bg-success display-5" role="progressbar">
+              </div>
+              <div id="progress-process" class="progress-bar progress-bar-striped progress-bar-animated display-5"
+                role="progressbar">
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <br>
+
+        <div class="row">
+          <div class="col setting rounded-left">
+
+            <h3>Settings</h3>
+
+            <div class="form-group">
+
+              <div class="input-group">
+                <input type="range" class="form-control custom-range rounded-left" min="5" max="80" step="5" id="controlRange"
+                  oninput="updateRange()">
+                <div class="input-group-append">
+                  <span class="input-group-text" id="controlRangeText"></span>
+                </div>
+              </div>
+              <br>
+              <div class="form-check custom-control custom-checkbox">
+                <input class="custom-control-input" type="checkbox" id="autoplay">
+                <label class="custom-control-label" for="autoplay">
+                  Autoplay
+                </label>
+              </div>
+              <br>
+              <div class="form-check custom-control custom-checkbox">
+                <input class="custom-control-input" type="checkbox" id="sleepMode">
+                <label class="custom-control-label" for="sleepMode">
+                  Sleep mode
+                </label>
+              </div>
+              <br>
+              <div class="form-check custom-control custom-checkbox">
+                <input class="custom-control-input" type="checkbox" id="autotesting">
+                <label class="custom-control-label" for="autotesting">
+                  Autotesting
+                </label>
+              </div>
+              <br>
+              <div class="form-check custom-control custom-checkbox">
+                <input class="custom-control-input" type="checkbox" id="sensoranAlysis">
+                <label class="custom-control-label" for="sensoranAlysis">
+                  Sensor analysis
+                </label>
+              </div>
+              <br>
+            </div>
+
+            <div class="form-group">
+              <label for="exampleFormControlSelect1">Watering mode</label>
+              <select class="form-control custom-select" id="exampleFormControlSelect1">
+                <option>each hour</option>
+                <option>everyday</option>
+              </select>
+            </div>
+            <br>
+
+            <div class="form-group">
+              <button type="button" class="btn btn-secondary btn-block">Pour</button>
+              <button type="button" class="btn btn-secondary btn-block">Testing</button>
+            </div>
+
+          </div>
+
+          <div class="col result rounded-right">
+            <h3>Result</h3>
+            RESULT
+          </div>
+
+        </div>
+      </div>
 
     </div>
-  </div>
-  </div>
-</body>
+
+    <script src="./node_modules/jquery/dist/jquery.js"></script>
+    <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    <script src="./libs/ipInput.min.js"></script>
+    <script src="./index.js"></script>
+  </body>
+
 </html>
