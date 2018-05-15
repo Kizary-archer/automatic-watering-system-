@@ -19,7 +19,6 @@
 #define Wetlavelnow 0 // датчик влажности
 TM1637 tm1637(3, 2); //Создаём объект класса TM1637, в качестве параметров передаём номера пинов подключения
 iarduino_RTC time(RTC_DS1307);
-void EEPROMread();
 void EEPROMwrite();
 void EEPROMclear();
 void switchTimer();
@@ -70,85 +69,24 @@ void(* resetFunc) (void) = 0;//перезагрузка
 void loop()
 {
   time.gettime();
-  if (time.Hours != EEPROM.read(Hour)) EEPROMwrite();
-}
-void memoryFull()
-{
-  EEPROM.write(keeper, 0);
-  EEPROMclear(255);
-  resetFunc();
+  if (time.Hours != EEPROM.read(Hour)) {
+    MsTimer2::stop();
+    EEPROMwrite();
+    if (map (analogRead(Wetlavelnow), 0, 1023, 0, 100) < EEPROM.read(Wetlavelmin))
+      watering (); //полив
+    MsTimer2::start();
+  }
 }
 void EEPROMwrite()
 {
-  MsTimer2::stop();
-  byte addr = EEPROM.read(countlog);
-  if (addr >= 255) memoryFull(); //Переполнение памяти EEPROM
-  time.gettime();
-  Serial.println("****** Write start ******");
-  Serial.print("value");
-  Serial.print("[");
-  Serial.print(addr);
-  Serial.print("] = ");
+  unsigned short addr = EEPROM.read(countlog)+1;
   digitalWrite(WetsensorPower, HIGH);
   timerDelay(5000);
-  Serial.println(analogRead(Wetlavelnow));
-  EEPROM.write(addr, time.Hours);
-  addr++;
-  if (map (analogRead(Wetlavelnow), 0, 1023, 0, 255) < EEPROM.read(Wetlavelmin)) 
-  {
-  watering (); //полив
-  timerDelay(10000);
-  }
-  EEPROM.write(addr, map (analogRead(Wetlavelnow), 0, 1023, 0, 255));
-  int val = analogRead(Wetlavelnow);
+  EEPROM.write(addr, map (analogRead(Wetlavelnow), 0, 1023, 0, 100));
   digitalWrite(WetsensorPower, LOW);
-  addr++;
+  unsigned short val = EEPROM.read(addr);
   EEPROM.write(countlog, addr);
-  EEPROM.write(Hour, time.Hours);
   tm1637.display(val);
-  MsTimer2::start();
-}
-
-void EEPROMread(unsigned short ind)
-{
-  unsigned short j = 1;
-  Serial.println("****** Read start ******");
-  Serial.print(EEPROM.read(TimeSensorHours));
-  Serial.print(" Hours : ");
-  Serial.print(EEPROM.read(TimeSensorDays));
-  Serial.print(" Days : ");
-  Serial.print(EEPROM.read(TimeSensorMonth));
-  Serial.println(" Month");
-  for (unsigned short i = 0; i < ind; i++)
-  {
-    if (i <= 255) {
-      if (i % 2 != 0) //чередование времени и значений
-      {
-        Serial.print("Wetvalue");
-        Serial.print("[");
-        Serial.print(j);
-        Serial.print("] = ");
-        Serial.println(map(EEPROM.read(i), 0 , 255 , 0 , 1023));
-        j++;
-      }
-      else
-      {
-        Serial.println("--------------");
-        Serial.println("Hours");
-        Serial.println(EEPROM.read(i));
-        Serial.println("--------------");
-      }
-    }
-    else
-    {
-      Serial.print("value");
-      Serial.print("[");
-      Serial.print(j);
-      Serial.print("] = ");
-      Serial.println(EEPROM.read(i));
-      j++;
-    }
-  }
 }
 void EEPROMclear(unsigned short ind)
 {
