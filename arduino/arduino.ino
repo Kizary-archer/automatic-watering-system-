@@ -2,14 +2,8 @@
 #include "TM1637.h"
 #include <MsTimer2.h>
 #include <iarduino_RTC.h>
+
 ////////////Settings///////////////
-#define TimeSensorHours 1000 //Час в памяти
-#define TimeSensorDays 1001 //День в памяти
-#define TimeSensorMonth 1002 // Месяц в памяти
-#define keeper 1003 //Сторож первого запуска
-#define countlog 1004 // размер лога
-#define Hour 1005 // Час последней записи 
-#define Wetlavelmin 1006 // минимальный уровень влажности
 #define WetsensorPower 8 //подача питания на датчик влажности
 #define WetlavelEditPower 7 //питание патенциометра
 #define Button 6 //кнопка режима настройки
@@ -19,14 +13,27 @@
 #define Wetlavelnow 0 // датчик влажности
 TM1637 tm1637(3, 2); //Создаём объект класса TM1637, в качестве параметров передаём номера пинов подключения
 iarduino_RTC time(RTC_DS1307);
+#define keeper 1008 //Сторож первого запуска
+#define countlog 1009 // размер лога
+#define Wetlavelmin 1010 // минимальный уровень влажности
+
+//дата начала измерений
+#define TimeSensorHoursStart 1000 //Час в памяти
+#define TimeSensorDaysStart 1001 //День в памяти
+#define TimeSensorMonthStart 1002 // Месяц в памяти
+#define TimeSensorYearhStart 1003 // Год в памяти
+//дата последнего измерения
+#define TimeSensorHoursLast 1004 //Час в памяти
+#define TimeSensorDaysLast 1005 //День в памяти
+#define TimeSensorMonthLast 1006 // Месяц в памяти
+#define TimeSensorYearhLast 1007 // Год в памяти
+
 void EEPROMwrite();
 void EEPROMclear();
-void switchTimer();
-void help();
+void SerialReadTimer();
 void WetlavelEditor();
 void timerDelay();
 void analize();
-void memoryFull();
 
 void setup()
 {
@@ -38,18 +45,14 @@ void setup()
   pinMode(DispPower, OUTPUT);
   digitalWrite(DispPower, HIGH);
   Serial.begin(9600);
-  MsTimer2::set(500, switchTimer); // задаем период прерывания по таймеру 500 мс
+  MsTimer2::set(100, SerialReadTimer); // задаем период прерывания по таймеру 100 мс
   MsTimer2::start();
   time.begin();
-  time.period(10);
+  //time.period(10);
   time.gettime();
   tm1637.init();
   tm1637.set(BRIGHT_DARKEST);
-  Serial.println("v1.9.5");
-  Serial.println(time.gettime("d-m-Y, H:i:s, D"));
-  Serial.println("enter h for help");
-  byte addr = EEPROM.read(countlog);
-  int val = map(EEPROM.read(addr - 1), 0 , 255 , 0, 1023 );
+  int val = EEPROM.read(countlog);
   tm1637.display(val);
   if (EEPROM.read(keeper) == 0)
   {
@@ -143,7 +146,7 @@ void timerDelay(unsigned short t)
     if (currentMillis - ts > t)break;
   }
 }
-void switchTimer()
+void SerialReadTimer()
 {
   if (Serial.available() > 0)
   {
@@ -164,16 +167,4 @@ void switchTimer()
     Serial.clear(); // очистка буфера !!!
   }
   if (digitalRead(Button) == LOW) WetlavelEditor();
-}
-void help()
-{
-  Serial.println("****** HELP ******");
-  Serial.println("r - reading data in the memory");
-  Serial.println("c - clear the memory");
-  Serial.println("C - clear all the memory");
-  Serial.println("h - help");
-  Serial.println("R - Restart");
-  Serial.println("a - Read all");
-  Serial.println("A - Wet analize");
-  Serial.println("W - PompActivate");
 }
