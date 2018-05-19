@@ -55,7 +55,7 @@ void setup()
   int val = EEPROM.read(countlog);
   tm1637.display(val);
   if (EEPROM.read(Wetlavelmin) == 0) EEPROM.update(Wetlavelmin, 60);//минимальный уровень влажности при не установленном вручную
-  if (!EEPROM.read(keeper))
+  if (EEPROM.read(keeper == 0))
   {
     EEPROM.update(TimeSensorHourStart, time.Hours);
     EEPROM.update(TimeSensorDaysStart, time.day);
@@ -119,18 +119,14 @@ void CountLogValue (short value)
     tm1637.point(true);
     while (digitalRead(Button) == LOW)
     {
-      Serial.print("LevelEdit = ");
-      Serial.println(analogRead(WetlavelEdit));
       tm1637.display(analogRead(WetlavelEdit));
       delay(10000);
     }
-    byte sensVal = constrain(map (analogRead(WetlavelEdit), 0, 1023, 0, 254), 100, 254); //ограничение уровня влажности 100-254
-    EEPROM.write(Wetlavelmin, sensVal );
-    Serial.println(analogRead(WetlavelEdit));
+    byte sensVal = constrain(map (analogRead(WetlavelEdit), 0, 1023, 0, 100), 20, 100); //ограничение уровня влажности 20-100
+    EEPROM.update(Wetlavelmin, sensVal );
     tm1637.point(false);
     digitalWrite(WetlavelEditPower, LOW);
-    byte addr = EEPROM.read(countlog);
-    int val = map(EEPROM.read(addr - 1), 0 , 255 , 0, 1024 );
+    int val = EEPROM.read(countlog);
     tm1637.display(val);
   }
   void watering ()
