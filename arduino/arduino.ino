@@ -35,6 +35,8 @@ void WetlavelEditor();
 void timerDelay();
 void analize();
 void CountLogValue();
+void memoryFull();
+
 void setup()
 {
   pinMode(Wetlavelnow, INPUT);
@@ -52,7 +54,7 @@ void setup()
   time.gettime();
   tm1637.init();
   tm1637.set(BRIGHT_DARKEST);
-  int val = EEPROM.read(countlog);
+  int val = countlog;
   tm1637.display(val);
   if (EEPROM.read(Wetlavelmin) == 0) EEPROM.update(Wetlavelmin, 60);//минимальный уровень влажности при не установленном вручную
   if (EEPROM.read(keeper == 0))
@@ -64,6 +66,7 @@ void setup()
 
     EEPROM.update(keeper, 1);
     CountLogValue(-1); //начальное значение
+    EEPROMwrite();
   }
 }
 
@@ -84,7 +87,8 @@ void loop()
 }
 void EEPROMwrite()
 {
-  unsigned short addr = EEPROM.read(countlog) + 1;
+  unsigned short addr = countlog + 1;
+  if (addr > 999) memoryFull(); //Переполнение памяти EEPROM
   digitalWrite(WetsensorPower, HIGH);
   timerDelay(5000);
   EEPROM.update(addr, map (analogRead(Wetlavelnow), 0, 1023, 0, 100));
@@ -97,6 +101,11 @@ void EEPROMwrite()
   EEPROM.update(TimeSensorDaysLast, time.day);
   EEPROM.update(TimeSensorMonthLast, time.month);
   EEPROM.update(TimeSensorYearLast, time.year);
+}
+void memoryFull()
+{
+  EEPROM.update(keeper, 0);
+  resetFunc();
 }
 void EEPROMclear(unsigned short ind)
 {
@@ -111,63 +120,61 @@ void CountLogValue (short value)
   EEPROM.update(1010, highByte(value));
   EEPROM.update(1011, lowByte(value));
 }
-  void WetlavelEditor ()
+void WetlavelEditor ()
+{
+  digitalWrite(WetlavelEditPower, HIGH);
+  digitalWrite(WetsensorPower, HIGH);
+  digitalWrite(pomp, LOW);
+  tm1637.point(true);
+  while (digitalRead(Button) == LOW)
   {
-    digitalWrite(WetlavelEditPower, HIGH);
-    digitalWrite(WetsensorPower, HIGH);
-    digitalWrite(pomp, LOW);
-    tm1637.point(true);
-    while (digitalRead(Button) == LOW)
+    tm1637.display(analogRead(WetlavelEdit));
+    delay(10000);
+  }
+  byte sensVal = constrain(map (analogRead(WetlavelEdit), 0, 1023, 0, 100), 20, 100); //ограничение уровня влажности 20-100
+  EEPROM.update(Wetlavelmin, sensVal );
+  tm1637.point(false);
+  digitalWrite(WetlavelEditPower, LOW);
+  int val = EEPROM.read(countlog);
+  tm1637.display(val);
+}
+void watering ()
+{
+  digitalWrite(pomp, HIGH);
+  timerDelay(4000);
+  digitalWrite(pomp, LOW);
+}
+void analize ()
+{
+  if EEPROM.read(countlog) > 5
+  }
+void timerDelay(unsigned short t)
+{
+  unsigned long ts = millis();
+  while (1) {
+    unsigned long currentMillis = millis();
+    // Serial.println(currentMillis/1000);
+    if (currentMillis - ts > t)break;
+  }
+}
+void SerialReadTimer()
+{
+  if (Serial.available() > 0)
+  {
+    byte val = Serial.read();
+    if (val == 'r') EEPROMread(EEPROM.read(countlog));
+    else if (val == 'a') EEPROMread(1024);
+    else if (val == 'c') EEPROMclear(255);
+    else if (val == 'C') EEPROMclear(1024); //после запуска функции нужно установить мин. влажность!!!
+    else if (val == 'R') resetFunc();
+    else if (val == 'A') analize();
+    else if (val == 'W')  digitalWrite(pomp , ! digitalRead(pomp));
+    else if (val == 'h') help();
+    else
     {
-      tm1637.display(analogRead(WetlavelEdit));
-      delay(10000);
+      Serial.println("this command does not exist");
+      Serial.println("enter h for help");
     }
-    byte sensVal = constrain(map (analogRead(WetlavelEdit), 0, 1023, 0, 100), 20, 100); //ограничение уровня влажности 20-100
-    EEPROM.update(Wetlavelmin, sensVal );
-    tm1637.point(false);
-    digitalWrite(WetlavelEditPower, LOW);
-    int val = EEPROM.read(countlog);
-    tm1637.display(val);
+    Serial.clear(); // очистка буфера !!!
   }
-  void watering ()
-  {
-    digitalWrite(pomp, HIGH);
-    timerDelay(4000);
-    digitalWrite(pomp, LOW);
-  }
-  void analize ()
-  {
-    Serial.println("***");
-    timerDelay(2000);
-    Serial.println(analogRead(Wetlavelnow));
-  }
-  void timerDelay(unsigned short t)
-  {
-    unsigned long ts = millis();
-    while (1) {
-      unsigned long currentMillis = millis();
-      // Serial.println(currentMillis/1000);
-      if (currentMillis - ts > t)break;
-    }
-  }
-  void SerialReadTimer()
-  {
-    if (Serial.available() > 0)
-    {
-      byte val = Serial.read();
-      if (val == 'r') EEPROMread(EEPROM.read(countlog));
-      else if (val == 'a') EEPROMread(1024);
-      else if (val == 'c') EEPROMclear(255);
-      else if (val == 'C') EEPROMclear(1024); //после запуска функции нужно установить мин. влажность!!!
-      else if (val == 'R') resetFunc();
-      else if (val == 'A') analize();
-      else if (val == 'W')  digitalWrite(pomp , ! digitalRead(pomp));
-      else if (val == 'h') help();
-      else
-      {
-        Serial.println("this command does not exist");
-        Serial.println("enter h for help");
-      }
-      Serial.clear(); // очистка буфера !!!
-    }
-  }
+}
