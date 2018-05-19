@@ -54,15 +54,15 @@ void setup()
   tm1637.set(BRIGHT_DARKEST);
   int val = EEPROM.read(countlog);
   tm1637.display(val);
-  if (EEPROM.read(Wetlavelmin) == 0) EEPROM.write(Wetlavelmin, 60);//минимальный уровень влажности при не установленном вручную
+  if (EEPROM.read(Wetlavelmin) == 0) EEPROM.update(Wetlavelmin, 60);//минимальный уровень влажности при не установленном вручную
   if (!EEPROM.read(keeper))
   {
-    EEPROM.write(TimeSensorHourStart, time.Hours);
-    EEPROM.write(TimeSensorDaysStart, time.day);
-    EEPROM.write(TimeSensorMonthStart, time.month);
-    EEPROM.write(TimeSensorYearStart, time.year);
+    EEPROM.update(TimeSensorHourStart, time.Hours);
+    EEPROM.update(TimeSensorDaysStart, time.day);
+    EEPROM.update(TimeSensorMonthStart, time.month);
+    EEPROM.update(TimeSensorYearStart, time.year);
 
-    EEPROM.write(keeper, 1);
+    EEPROM.update(keeper, 1);
     CountLogValue(-1); //начальное значение
   }
 }
@@ -87,28 +87,29 @@ void EEPROMwrite()
   unsigned short addr = EEPROM.read(countlog) + 1;
   digitalWrite(WetsensorPower, HIGH);
   timerDelay(5000);
-  EEPROM.write(addr, map (analogRead(Wetlavelnow), 0, 1023, 0, 100));
+  EEPROM.update(addr, map (analogRead(Wetlavelnow), 0, 1023, 0, 100));
   digitalWrite(WetsensorPower, LOW);
   unsigned short val = EEPROM.read(addr);
   CountLogValue(addr);
   tm1637.display(val);
 
-  EEPROM.write(TimeSensorHoursLast, time.Hours);
-  EEPROM.write(TimeSensorDaysLast, time.day);
-  EEPROM.write(TimeSensorMonthLast, time.month);
-  EEPROM.write(TimeSensorYearLast, time.year);
+  EEPROM.update(TimeSensorHoursLast, time.Hours);
+  EEPROM.update(TimeSensorDaysLast, time.day);
+  EEPROM.update(TimeSensorMonthLast, time.month);
+  EEPROM.update(TimeSensorYearLast, time.year);
 }
 void EEPROMclear(unsigned short ind)
 {
   for (unsigned short i = 0; i < ind; i++)
-    EEPROM.write(i, 0);
-  EEPROM.write(keeper, 0);
+    EEPROM.update(i, 0);
+  EEPROM.update(keeper, 0);
   resetFunc();
 }
-void CountLogValue (unsigned short value)
+void CountLogValue (short value)
 {
-  EEPROM.write(1010, highByte(value));
-  EEPROM.write(1011, lowByte(value));
+  value = constrain(value, -1, 999); //диапазон лога
+  EEPROM.update(1010, highByte(value));
+  EEPROM.update(1011, lowByte(value));
 }
   void WetlavelEditor ()
   {
