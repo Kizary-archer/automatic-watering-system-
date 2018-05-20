@@ -16,6 +16,7 @@ iarduino_RTC time(RTC_DS1307);
 #define keeper 1008 //Сторож первого запуска
 #define countlog word(EEPROM.read(1010),EEPROM.read(1011)) // размер лога
 #define Wetlavelmin 1009 // минимальный уровень влажности
+#define operating mode 1012 //режим работы (час,день)
 
 //дата начала измерений
 #define TimeSensorHourStart 1000 //Час в памяти
@@ -93,11 +94,11 @@ void EEPROMwrite()
   timerDelay(5000);
   EEPROM.update(addr, map (analogRead(Wetlavelnow), 0, 1023, 0, 100));
   digitalWrite(WetsensorPower, LOW);
-  unsigned short val = EEPROM.read(addr);
+  int val = EEPROM.read(addr);
   CountLogValue(addr);
   tm1637.display(val);
-
-  EEPROM.update(TimeSensorHoursLast, time.Hours);
+  time.gettime();
+  EEPROM.update(TimeSensorHourLast, time.Hours);
   EEPROM.update(TimeSensorDaysLast, time.day);
   EEPROM.update(TimeSensorMonthLast, time.month);
   EEPROM.update(TimeSensorYearLast, time.year);
@@ -146,7 +147,7 @@ void watering ()
 }
 void analize ()
 {
-  if EEPROM.read(countlog) > 5
+  //if EEPROM.read(countlog) > 5
   }
 void timerDelay(unsigned short t)
 {
@@ -162,19 +163,18 @@ void SerialReadTimer()
   if (Serial.available() > 0)
   {
     byte val = Serial.read();
-    if (val == 'r') EEPROMread(EEPROM.read(countlog));
-    else if (val == 'a') EEPROMread(1024);
+    if (val == 'r') EEPROM.read(countlog);
+//    else if (val == 'a') EEPROMread(1024);
     else if (val == 'c') EEPROMclear(255);
     else if (val == 'C') EEPROMclear(1024); //после запуска функции нужно установить мин. влажность!!!
     else if (val == 'R') resetFunc();
     else if (val == 'A') analize();
     else if (val == 'W')  digitalWrite(pomp , ! digitalRead(pomp));
-    else if (val == 'h') help();
+   // else if (val == 'h') help();
     else
     {
       Serial.println("this command does not exist");
       Serial.println("enter h for help");
     }
-    Serial.clear(); // очистка буфера !!!
   }
 }
