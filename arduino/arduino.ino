@@ -30,13 +30,14 @@ iarduino_RTC time(RTC_DS1307);
 #define TimeSensorYearLast 1007 // Год в памяти
 
 void EEPROMwrite();
+void EEPROMread();
 void EEPROMclear();
 void SerialReadTimer();
 void WetlavelEditor();
 void timerDelay();
 void analize();
 void CountLogValue();
-void memoryFull();
+void memoryFull(); 
 
 void setup()
 {
@@ -78,8 +79,8 @@ void loop()
   time.gettime();
   if (time.Hours != EEPROM.read(TimeSensorHourLast)) {
     MsTimer2::stop();
-    if (map (analogRead(Wetlavelnow), 0, 1023, 0, 100) < EEPROM.read(Wetlavelmin))
-      watering (); //полив
+    //if (map (analogRead(Wetlavelnow), 0, 1023, 0, 100) < EEPROM.read(Wetlavelmin))
+    //watering (); //полив
     timerDelay(10000);
     EEPROMwrite();
     MsTimer2::start();
@@ -102,6 +103,24 @@ void EEPROMwrite()
   EEPROM.update(TimeSensorDaysLast, time.day);
   EEPROM.update(TimeSensorMonthLast, time.month);
   EEPROM.update(TimeSensorYearLast, time.year);
+}
+void EEPROMread(unsigned short ind)
+{
+  Serial.println("****** Read start ******");
+  Serial.print(EEPROM.read(TimeSensorHourStart));
+  Serial.print(" Hours : ");
+  Serial.print(EEPROM.read(TimeSensorDaysStart));
+  Serial.print(" Days : ");
+  Serial.print(EEPROM.read(TimeSensorMonthStart));
+  Serial.println(" Month");
+  for (unsigned short i = 0; i < ind; i++)
+  {
+    Serial.print("Wetvalue");
+    Serial.print("[");
+    Serial.print(i);
+    Serial.print("] = ");
+    Serial.println(EEPROM.read(i));
+  }
 }
 void memoryFull()
 {
@@ -148,7 +167,7 @@ void watering ()
 void analize ()
 {
   //if EEPROM.read(countlog) > 5
-  }
+}
 void timerDelay(unsigned short t)
 {
   unsigned long ts = millis();
@@ -164,13 +183,16 @@ void SerialReadTimer()
   {
     byte val = Serial.read();
     if (val == 'r') EEPROM.read(countlog);
-//    else if (val == 'a') EEPROMread(1024);
+    //    else if (val == 'a') EEPROMread(1024);
     else if (val == 'c') EEPROMclear(255);
     else if (val == 'C') EEPROMclear(1024); //после запуска функции нужно установить мин. влажность!!!
     else if (val == 'R') resetFunc();
+    else if (val == 'r') EEPROMread(1023);
+    else if (val == 'p') EEPROMread(countlog);
+    else if (val == 'w') EEPROMwrite();
     else if (val == 'A') analize();
     else if (val == 'W')  digitalWrite(pomp , ! digitalRead(pomp));
-   // else if (val == 'h') help();
+    // else if (val == 'h') help();
     else
     {
       Serial.println("this command does not exist");
