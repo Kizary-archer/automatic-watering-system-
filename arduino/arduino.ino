@@ -59,7 +59,7 @@ void setup()
   int val = EEPROM.read(countlog);
   tm1637.display(val);
   if (EEPROM.read(Wetlavelmin) == 0) EEPROM.update(Wetlavelmin, 60);//минимальный уровень влажности при не установленном вручную
-  if (EEPROM.read(keeper == 0))
+  if (EEPROM.read(keeper)== 0)
   {
     EEPROM.update(TimeSensorHourStart, time.Hours);
     EEPROM.update(TimeSensorDaysStart, time.day);
@@ -76,13 +76,14 @@ void(* resetFunc) (void) = 0;//перезагрузка
 
 void loop()
 {
- // time.gettime();
-  //if (time.Hours != EEPROM.read(TimeSensorHourLast)) {
-    //MsTimer2::stop();
+  time.gettime();
+  if (time.Hours != EEPROM.read(TimeSensorHourLast)) {
+    MsTimer2::stop();
     //if (map (analogRead(Wetlavelnow), 0, 1023, 0, 100) < EEPROM.read(Wetlavelmin))
     //watering (); //полив
     EEPROMwrite();
-  //}
+    MsTimer2::start();
+  }
 
 }
 void EEPROMwrite()
@@ -101,11 +102,6 @@ void EEPROMwrite()
   EEPROM.update(TimeSensorDaysLast, time.day);
   EEPROM.update(TimeSensorMonthLast, time.month);
   EEPROM.update(TimeSensorYearLast, time.year);
-    Serial.print("Wetvalue");
-    Serial.print("[");
-    Serial.print(addr);
-    Serial.print("] = ");
-    Serial.println(EEPROM.read(addr));
 }
 void EEPROMread(unsigned short ind)
 {
