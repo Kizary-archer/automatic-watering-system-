@@ -184,7 +184,7 @@ void SerialReadTimer()
     byte val = Serial.read();
     if (val == 'r') EEPROMread(countlog);
     else if (val == 'a') EEPROMread(1023);
-    else if (val == 'c') EEPROMclear(255);
+    else if (val == 'c') EEPROMclear(999);
     else if (val == 'C') EEPROMclear(1024); //после запуска функции нужно установить мин. влажность!!!
     else if (val == 'R') resetFunc();
     else if (val == 'A') analize();
