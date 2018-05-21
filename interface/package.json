@@ -1,37 +1,35 @@
 {
   "requires": true,
   "lockfileVersion": 1,
-  "name": "package.json",
+  "name": "fomin-ui",
   "version": "1.0.0",
-  "main": "",
-  "description": "exampleNode",
   "author": "Kizari",
-  "license": "ISC",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "test": "echo 'Error: no test specified' && exit 1",
-    "start": "",
-    "nodemon": "nodemon",
-    "bsi": "browser-sync init",
-    "bs": "browser-sync start --files '*.html'"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Kizary-archer/automatic_watering_system.git"
+    "test": "node server.js"
   },
+  "license": "MIT",
   "dependencies": {
+    "bootbox": "^4.4.0",
     "bootstrap": "^4.1.1",
+    "highcharts": "^6.1.0",
     "jquery": "^3.3.1"
   },
   "devDependencies": {
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-import": "^2.11.0",
+    "websocket": "^1.0.26"
   },
   "eslintConfig": {
     "extends": "airbnb-base",
     "env": {
-      "browser": true,
-      "node": true
+      "browser": true
     },
     "rules": {
       "no-plusplus": [
