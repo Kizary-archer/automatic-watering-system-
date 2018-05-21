@@ -7,15 +7,15 @@
     <title>Dashboard</title>
     <link rel="icon" type="image/png" href="./imgs/favicon.png">
     <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css">
-    <link rel="stylesheet" href="./libs/ipInput.min.css">
-    <link rel="stylesheet" href="./index.css">
+    <link rel="stylesheet" href="./css/ipInput.min.css">
+    <link rel="stylesheet" href="./css/toggle.css">
+    <link rel="stylesheet" href="./css/loader.css">
+    <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="./css/media.css">
   </head>
 
   <body>
-
-
     <!-- error modal -->
-    <!-- <button type="button" class="btn btn-primary" onclick="errorAlert('6565')">Small modal</button> -->
     <div id="errorModal" class="modal fade " tabindex="-1" role="dialog">
       <div class="modal-dialog">
         <div id="errorText" class="alert alert-danger" role="alert"></div>
@@ -30,11 +30,10 @@
           <h3>Сonnect to a microcontroller</h3>
         </div>
         <div class="card-body">
+
           <form id="loginForm">
-
-            <div class="form-group">
-
-              <label for="ip text-left">IP Adress</label>
+            <label for="ip text-left">IP Adress</label>
+            <div class="input-group">
               <div id="ip">
                 <div class="ip-input-container">
                   <input type="text" class="ip-input-item">
@@ -46,6 +45,7 @@
                   <input type="text" class="ip-input-item">
                 </div>
               </div>
+              <input id="port" type="text" class="form-control">
             </div>
 
             <div class="form-group">
@@ -53,12 +53,11 @@
               <input type="password" class="form-control" id="password" placeholder="Password">
             </div>
 
-            <button type="button" class="btn btn-primary btn-block" onclick="connect()">Connect</button>
-
+            <button type="button" class="btn btn-primary btn-block" onclick="login()">Connect</button>
           </form>
 
-          <img id="loadingConnect" src="./imgs/loading.svg" alt="loading" width="150px" style="display: none;"
-            class="card-img-top">
+          <div id="loadingConnect" class="loader loader-m card-img-top" style="display: none;"></div>
+
         </div>
       </div>
     </div>
@@ -68,130 +67,143 @@
 
       <!-- navbar -->
       <nav class="navbar navbar-light bg-light">
+        
         <span class="navbar-brand">
-          <img id="loadingSend" src="./imgs/loading.svg" alt="loading" width="60px" style="display: none;" class="float-left">
+          <div id="loadingSend" class="loader loader-s float-left"></div>
           <img id="logo" src="./imgs/flower.png" alt="flower" class="logo float-left">
           <b>
-            <span id="modelText"></span> 
+            <span id="modelText"></span>
             <br>
             <span id="ipText"></span>
           </b>
         </span>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav"
-          aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <form class="form-inline justify-content-end">
-            <button class="btn btn-outline-danger" type="button" onclick="disconnect()">Disconnect</button>
-          </form>
-        </div>
+        <button class="btn btn-outline-danger" type="button" onclick="disconnect()">&times;</button>
       </nav>
       <br>
 
+      <!-- alert -->
+      <div class="alert alert-warning alert-dismissible fade show" style="display: none;">
+        <strong id="alert"></strong>
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+
       <!-- body -->
       <div class="container">
-        <div class="row">
-
-          <button type="button" class="btn btn-primary" onclick="socket.send('test')">SEND string</button>
-          <button type="button" class="btn btn-primary" onclick="socket.send(555)">SEND number</button>
-
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Et labore ea temporibus cupiditate
-            ad saepe, quas ipsam amet, odio perferendis veniam? Veritatis minima quo, culpa omnis iusto
-            nemo doloribus deserunt!
-          </p>
-        </div>
 
         <div class="row">
-          <div class="col">
-              
-            <div class="progress">
+          <div class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-12">
+            <p id="timer" class="text-center display-5" style="white-space: nowrap;"></p>
+          </div>
+          <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-12">
+            <div class="progress progress-info">
               <div id="progress-comlete" class="progress-bar progress-bar-striped bg-success display-5" role="progressbar">
               </div>
               <div id="progress-process" class="progress-bar progress-bar-striped progress-bar-animated display-5"
                 role="progressbar">
               </div>
             </div>
-
           </div>
         </div>
+
         <br>
 
         <div class="row">
-          <div class="col setting rounded-left">
+          <div class="col-xl-9 col-lg-8 col-md-12 col-sm-12 col-12 result rounded-left">
+            <h3>Soil moisture statistics</h3>
+            <div id="containerChart" style="height: 400px; min-width: 310px"></div>
+          </div>
 
+          <div class="col-xl-3 col-lg-4 col-md-12 col-sm-12 col-12 setting rounded-right">
             <h3>Settings</h3>
 
             <div class="form-group">
-
               <div class="input-group">
-                <input type="range" class="form-control custom-range rounded-left" min="5" max="80" step="5" id="controlRange"
-                  oninput="updateRange()">
+                <input type="range" class="form-control custom-range rounded-left" min="5" max="90" step="5" id="controlRange"
+                  oninput="updateRange()" onchange="range()" data-toggle="tooltip" data-placement="top" title="Humidity">
                 <div class="input-group-append">
                   <span class="input-group-text" id="controlRangeText"></span>
                 </div>
               </div>
               <br>
-              <div class="form-check custom-control custom-checkbox">
-                <input class="custom-control-input" type="checkbox" id="autoplay">
-                <label class="custom-control-label" for="autoplay">
-                  Autoplay
+
+              <div class="input-group" data-toggle="tooltip" data-placement="top" title="Warning, turns off the system!">
+                  <label for="automaticWatering" class="switch-label" >
+                  <div class="switch">
+                    <input type="checkbox" id="automaticWatering" style="display: none;" onchange="confirmСhanges('automaticWatering')">
+                    <span class="switch-slider round"></span>
+                  </div>
+                  Automatic watering
+                  <span class="badge badge-warning" >!</span>
                 </label>
               </div>
-              <br>
-              <div class="form-check custom-control custom-checkbox">
-                <input class="custom-control-input" type="checkbox" id="sleepMode">
-                <label class="custom-control-label" for="sleepMode">
-                  Sleep mode
+
+              <div class="input-group">
+                <label for="energySavingMode" class="switch-label" >
+                  <div class="switch">
+                    <input type="checkbox" id="energySavingMode" style="display: none;"  onclick="switchCheckbox('energySavingMode')">
+                    <span class="switch-slider round"></span>
+                  </div>
+                  Energy saving mode
                 </label>
               </div>
-              <br>
-              <div class="form-check custom-control custom-checkbox">
-                <input class="custom-control-input" type="checkbox" id="autotesting">
-                <label class="custom-control-label" for="autotesting">
-                  Autotesting
-                </label>
-              </div>
-              <br>
-              <div class="form-check custom-control custom-checkbox">
-                <input class="custom-control-input" type="checkbox" id="sensoranAlysis">
-                <label class="custom-control-label" for="sensoranAlysis">
+
+              <div class="input-group">
+                <label for="sensoranAlysis" class="switch-label" >
+                  <div class="switch">
+                    <input type="checkbox" id="sensoranAlysis" style="display: none;" onclick="switchCheckbox('sensoranAlysis')">
+                    <span class="switch-slider round"></span>
+                  </div>
                   Sensor analysis
                 </label>
               </div>
-              <br>
-            </div>
 
-            <div class="form-group">
-              <label for="exampleFormControlSelect1">Watering mode</label>
-              <select class="form-control custom-select" id="exampleFormControlSelect1">
-                <option>each hour</option>
-                <option>everyday</option>
-              </select>
-            </div>
-            <br>
+              <div class="input-group">
+                <label for="autotesting" class="switch-label" >
+                  <div class="switch">
+                    <input type="checkbox" id="autotesting" style="display: none;" onclick="switchCheckbox('autotesting')">
+                    <span class="switch-slider round"></span>
+                  </div>
+                  Autotesting
+                </label>
+              </div>
 
-            <div class="form-group">
-              <button type="button" class="btn btn-secondary btn-block">Pour</button>
-              <button type="button" class="btn btn-secondary btn-block">Testing</button>
+              <div class="form-group" data-toggle="tooltip" data-placement="top" title="Warning, reset statistics!">
+                <label for="wateringMode">
+                  <span class="badge badge-danger" >!!!</span>
+                  Watering mode
+                </label>
+                <select class="form-control" id="wateringMode" onchange="confirmСhanges('wateringMode')">
+                  <option value="true">each hour</option>
+                  <option value="false">everyday</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <button type="button" class="btn btn-secondary" onclick="systemCheck()">System check</button>
+                <button type="button" class="btn btn-secondary" onclick="restart()">Restart</button>
+              </div>
             </div>
+          </div>
+          <br>
+
+          <div class="row">
 
           </div>
 
-          <div class="col result rounded-right">
-            <h3>Result</h3>
-            RESULT
-          </div>
+          <script src="./node_modules/jquery/dist/jquery.js"></script>
+          <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script>
+          <script src="./node_modules/highcharts/highstock.js"></script>
 
-        </div>
-      </div>
+          <script src="./libs/ipInput.min.js"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
-    </div>
-
-    <script src="./node_modules/jquery/dist/jquery.js"></script>
-    <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script>
-    <script src="./libs/ipInput.min.js"></script>
-    <script src="./index.js"></script>
+          <script src="./js/component-chart.js"></script>
+          <script src="./js/component-checkbox.js"></script>
+          <script src="./js/component-error-alert.js"></script>
+          <script src="./js/component-rage.js"></script>
+          <script src="./js/component-text.js"></script>
+          <script src="./js/component-timer.js"></script>
+          <script src="./js/index.js"></script> 
   </body>
 
 </html>

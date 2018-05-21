@@ -1,0 +1,78 @@
+
+
+
+/* media */
+
+@media only screen and (max-width: 380px) { 
+
+  .setting {
+    min-width: 250px;
+  }
+  
+  .result {
+    min-width: 250px;
+  }
+
+  #dashboard {
+    margin: 0;
+  }
+  
+  #loginCard {
+    margin: 0;
+  }
+
+  .card {
+    box-shadow:none !important;
+  }
+
+  #modelText,
+  #ipText {
+    font-size: 10pt;
+  }
+
+  #logs {
+    height: 200px;
+  }
+}
+
+@media only screen and (max-width: 550px) { 
+  #logs {
+    height: 200px;
+  }
+}
+
+@media only screen and (max-height: 350px) { 
+  
+  #loginCard {
+    margin:0;
+  }
+
+  .card-header {
+    padding: 2px;
+  }
+
+  .card-body {
+    padding: 10px;
+  }
+}
+
+@media only screen and (max-width: 1200px) { 
+  
+  #dashboard {
+    margin-top:0;
+    box-shadow:none !important;
+  }
+
+}
+
+@media (min-width: 800px) { 
+
+  #modelText,
+  #ipText {
+    font-size: 16pt;
+  }
+
+  p {
+    font-size: 14pt;
+  }
+}
