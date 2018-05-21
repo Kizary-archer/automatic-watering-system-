@@ -70,7 +70,6 @@ void setup() {
         delay(1000);
     }
 
-    WiFiMulti.addAP("name", "pass");
 
     while(WiFiMulti.run() != WL_CONNECTED) {
         delay(100);
