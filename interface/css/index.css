@@ -1,0 +1,99 @@
+p {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.navbar-brand {
+  text-overflow: clip;
+}
+
+.ip-input-container {
+  border-top-left-radius:3px;
+  border-bottom-left-radius: 3px;
+  border-right: 0;
+  padding: 5px;
+  font-size: 14pt;
+
+}
+
+.ip-input-container:hover {
+  color: #495057;
+  background-color: #fff;
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.ip-input-item {
+  font-size: 16px !important;
+  max-width: 55px !important;
+}
+
+.setting {
+  float: right;
+  padding: 10px;
+  min-width: 200px;
+}
+
+.result {
+  padding: 10px;
+  min-width: 250px;
+}
+
+#logs {
+  overflow: auto;
+  height: 85%;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  padding: 5px;
+  margin-bottom: 15px;
+}
+
+#dashboard {
+  max-width: 1200px;
+  padding-bottom: 50px;
+  margin: 30px auto;
+}
+
+#loginCard {
+  margin-top: 30px;
+}
+
+#modelText,
+#ipText {
+  font-size: 13pt;
+}
+
+#timer {
+  height: 50px;
+  background-color: #eee;
+  border-radius: 3px;
+}
+
+#timer p{
+  padding: 0;
+  margin: 0;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+.logo {
+  margin-right: 10px;
+  width: 60px;
+}
+
+.progress-info {
+  height: 50px;
+}
+
+.display-5 {
+  font-size: 24pt;
+}
+
+.custom-range {
+  padding: 18px;
+}
+
+.bootbox-close-button {
+  display: none;
+}
