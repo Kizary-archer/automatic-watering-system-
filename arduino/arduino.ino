@@ -34,7 +34,7 @@ void WetlavelEditor();
 void timerDelay();
 bool analize();
 void CountLogValue();
-void newPoint();
+void reStart();
 void WetlavelEditWifi();
 
 void setup()
@@ -91,7 +91,7 @@ void loop()
 void EEPROMwrite()
 {
   unsigned short addr = countlog + 1;
-  if (addr > 999) newPoint(); //Переполнение памяти EEPROM
+  if (addr > 999) reStart(); //Переполнение памяти EEPROM
   EEPROM.update(addr, map (analogRead(Wetlavelnow), 0, 1023, 0, 100));
   int val = EEPROM.read(addr);
   CountLogValue(addr);
@@ -101,7 +101,7 @@ void EEPROMread(unsigned short ind)
 {
   for (unsigned short i = 0; i <= ind; i++) Serial.println(EEPROM.read(i));
 }
-void newPoint()
+void reStart()
 {
   if (Serial.available() > 0)
   {
@@ -159,7 +159,6 @@ void watering ()
 }
 bool analize ()
 {
-
   if (map (analogRead(Wetlavelnow), 0, 1023, 0, 100) < 10)
     return 0;
   return 1;
@@ -179,12 +178,12 @@ void SerialReadTimer()
   {
     byte val = Serial.read();
     if (val == 'r') EEPROMread(countlog);
-    else if (val == 'a') EEPROMread(1023);
+    else if (val == 'e') WetlavelEditWifi();
     else if (val == 'c') EEPROMclear(999);
     else if (val == 'C') EEPROMclear(1024);
     else if (val == 'R') resetFunc();
-    else if (val == 'A') analize();
-    else if (val == 'W')  digitalWrite(pomp , ! digitalRead(pomp));
+    else if (val == 'A') reStart();
+    //else if (val == 'W')  digitalWrite(pomp , ! digitalRead(pomp));
     // else if (val == 'h') help();
     else
     {
