@@ -74,7 +74,7 @@ void(* resetFunc) (void) = 0;//перезагрузка
 
 void loop()
 {
-  time.gettime();
+ /* time.gettime();
   if (time.Hours != EEPROM.read(TimeSensorHourLast)) {
     MsTimer2::stop();
     digitalWrite(WetsensorPower, HIGH);
@@ -85,7 +85,7 @@ void loop()
     EEPROMwrite();
     digitalWrite(WetsensorPower, LOW);
     MsTimer2::start();
-  }
+  }*/
 
 }
 void EEPROMwrite()
@@ -145,10 +145,12 @@ void WetlavelEditor ()
 }
 void WetlavelEditWifi ()
 {
+  Serial.print("80");
   if (Serial.available() > 0)
   {
     byte val = Serial.read();
     EEPROM.update(Wetlavelmin,val);
+    Serial.print(EEPROM.read(Wetlavelmin));
   }
 }
 void watering ()
@@ -176,20 +178,8 @@ void SerialReadTimer()
 {
   if (Serial.available() > 0)
   {
-    byte val = Serial.read();
-    if (val == 'r') EEPROMread(countlog);
-    else if (val == 'e') WetlavelEditWifi();
-    else if (val == 'c') EEPROMclear(999);
-    else if (val == 'C') EEPROMclear(1024);
-    else if (val == 'R') resetFunc();
-    else if (val == 'A') reStart();
-    //else if (val == 'W')  digitalWrite(pomp , ! digitalRead(pomp));
-    // else if (val == 'h') help();
-    else
-    {
-      Serial.println("this command does not exist");
-      Serial.println("enter h for help");
-    }
+    String event = Serial.readString();
+    if (event == "setHumidity") WetlavelEditWifi(); 
   }
-  if (digitalRead(Button) == LOW) WetlavelEditor();
+  //if (digitalRead(Button) == LOW) WetlavelEditor();
 }
