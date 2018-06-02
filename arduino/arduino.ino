@@ -16,7 +16,7 @@ iarduino_RTC time(RTC_DS1307);
 #define keeper 1008 //Сторож первого запуска
 #define countlog word(EEPROM.read(1010),EEPROM.read(1011)) // размер лога
 #define Wetlavelmin 1009 // минимальный уровень влажности
-#define mode 1012 //режим работы (час,день)
+#define oper_mode 1012 //режим работы (час,день)
 #define analize_mode 1005 // минимальный уровень влажности
 
 //дата начала измерений
@@ -25,6 +25,7 @@ iarduino_RTC time(RTC_DS1307);
 #define TimeSensorMonthStart 1002 // Месяц в памяти
 #define TimeSensorYearStart 1003 // Год в памяти
 #define TimeSensorHourLast 1004 //Час последней записи в памяти
+#define TimeSensorDayLast 1013 //день  последней записи в памяти
 
 void EEPROMwrite();
 void EEPROMread();
@@ -36,8 +37,11 @@ bool analize();
 void CountLogValue();
 void reStart();
 void WetlavelEditWifi();
-void SerialRead();
+void SerialReadTimer();
 bool operating_mode();
+bool modeUpdate();
+void SerialRead();
+
 void setup()
 {
   pinMode(Wetlavelnow, INPUT);
@@ -48,7 +52,7 @@ void setup()
   pinMode(DispPower, OUTPUT);
   digitalWrite(DispPower, HIGH);
   Serial.begin(9600);
-  MsTimer2::set(100, SerialRead); // задаем период прерывания по таймеру 100 мс
+  MsTimer2::set(100, SerialReadTimer); // задаем период прерывания по таймеру 100 мс
   MsTimer2::start();
   time.begin();
   time.period(1);
@@ -81,12 +85,13 @@ void loop()
     digitalWrite(WetsensorPower, HIGH);
     timerDelay(2000);
     if (map (analogRead(Wetlavelnow), 0, 1023, 0, 100) < EEPROM.read(Wetlavelmin))
-      if (analize())
+      if (analize() && operating_mode())
         watering (); //полив
     EEPROMwrite();
     digitalWrite(WetsensorPower, LOW);
     MsTimer2::start();
   }
+  SerialRead();
 }
 void EEPROMwrite()
 {
@@ -107,6 +112,13 @@ void reStart()
 {
   EEPROM.update(keeper, 0);
   resetFunc();
+}
+bool operating_mode()
+{
+  time.gettime();
+  if ((((EEPROM.read(oper_mode) == true)) && (time.day != EEPROM.read(TimeSensorDayLast))) || ((EEPROM.read(oper_mode) == false)))
+    return 1;
+  return 0;
 }
 void EEPROMclear(unsigned short ind)
 {
@@ -153,11 +165,11 @@ void WetlavelEditWifi ()
     Serial.print(EEPROM.read(Wetlavelmin));
   }
 }
-bool operating_mode()
+bool modeUpdate(short value) // 0-каждый час , 1-каждый день
 {
-bool  bvalue = !EEPROM.read(mode);
-  EEPROM.write(mode,bvalue);
-  return bvalue; 
+  bool  bvalue = !EEPROM.read(value);
+  EEPROM.update(value, bvalue);
+  return bvalue;
 }
 void watering ()
 {
@@ -176,24 +188,24 @@ void timerDelay(unsigned short t)
   unsigned long ts = millis();
   while (1) {
     unsigned long currentMillis = millis();
-    // Serial.println(currentMillis/1000);
     if (currentMillis - ts > t)break;
   }
 }
 void SerialRead()
 {
-  if (Serial.available() > 0)
+   if (Serial.available() > 0)
   {
     String event = Serial.readString();
     if (event == "setHumidity") WetlavelEditWifi();
-    else if (event == "setWateringMode") Serial.print(operating_mode());
-   // else if (event == "help") help();
-    //else if (event == "help") help();
+    else if (event == "setWateringMode") Serial.print(modeUpdate(oper_mode));
     else
     {
       Serial.println("this command does not exist");
       Serial.println("enter h for help");
     }
-  }
+  } 
+}
+void SerialReadTimer()
+{
   if (digitalRead(Button) == LOW) WetlavelEditor();
 }
