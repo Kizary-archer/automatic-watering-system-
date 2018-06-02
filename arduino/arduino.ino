@@ -179,8 +179,10 @@ void watering ()
 }
 bool analize ()
 {
-  if (map (analogRead(Wetlavelnow), 0, 1023, 0, 100) < 10)
-    return 0;
+  if (EEPROM.read(analize_mode))
+      if (map (analogRead(Wetlavelnow), 0, 1023, 0, 100) > 10)
+      return 1;
+    else return 0;
   return 1;
 }
 void timerDelay(unsigned short t)
@@ -193,17 +195,18 @@ void timerDelay(unsigned short t)
 }
 void SerialRead()
 {
-   if (Serial.available() > 0)
+  if (Serial.available() > 0)
   {
     String event = Serial.readString();
     if (event == "setHumidity") WetlavelEditWifi();
     else if (event == "setWateringMode") Serial.print(modeUpdate(oper_mode));
+    else if (event == "setsensoranAlysis") Serial.print(modeUpdate(analize_mode));
     else
     {
       Serial.println("this command does not exist");
       Serial.println("enter h for help");
     }
-  } 
+  }
 }
 void SerialReadTimer()
 {
