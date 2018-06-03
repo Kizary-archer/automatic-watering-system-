@@ -1,3 +1,4 @@
+#include <SoftwareSerial.h>
 #include <EEPROM.h>
 #include "TM1637.h"
 #include <iarduino_RTC.h>
@@ -13,11 +14,12 @@
 #define Wetlavelnow 0 // датчик влажности
 TM1637 tm1637(3, 2); //Создаём объект класса TM1637, в качестве параметров передаём номера пинов подключения
 iarduino_RTC time(RTC_DS1307);
+SoftwareSerial ESPSerial(10, 11); // RX, TX
 #define keeper 1008 //Сторож первого запуска
 #define countlog word(EEPROM.read(1010),EEPROM.read(1011)) // размер лога
 #define Wetlavelmin 1009 // минимальный уровень влажности
 #define oper_mode 1012 //режим работы (час,день)
-#define analize_mode 1005 // минимальный уровень влажности
+#define analize_mode 1005
 
 //дата начала измерений
 #define TimeSensorHourStart 1000 //Час в памяти
@@ -52,6 +54,7 @@ void setup()
   pinMode(DispPower, OUTPUT);
   digitalWrite(DispPower, HIGH);
   Serial.begin(9600);
+  ESPSerial.begin(9600);
   MsTimer2::set(100, SerialReadTimer); // задаем период прерывания по таймеру 100 мс
   MsTimer2::start();
   time.begin();
@@ -157,13 +160,15 @@ void WetlavelEditor ()
 
 void WetlavelEditWifi ()
 {
-  // Serial.print('80');
-  if (Serial.available() > 0)
+  unsigned long ts = millis();
+  while (ESPSerial.available() == 0)
   {
-    byte val = Serial.read();
-    EEPROM.update(Wetlavelmin, val);
-    Serial.print(EEPROM.read(Wetlavelmin));
+    unsigned long currentMillis = millis();
+    if (currentMillis - ts > 2000)break;
   }
+  int val = ESPSerial.parseInt ();
+  EEPROM.update(Wetlavelmin, val);
+  ESPSerial.print(val);
 }
 bool modeUpdate(short value) // 0-каждый час , 1-каждый день
 {
@@ -180,7 +185,7 @@ void watering ()
 bool analize ()
 {
   if (EEPROM.read(analize_mode))
-      if (map (analogRead(Wetlavelnow), 0, 1023, 0, 100) > 10)
+    if (map (analogRead(Wetlavelnow), 0, 1023, 0, 100) > 10)
       return 1;
     else return 0;
   return 1;
@@ -195,12 +200,13 @@ void timerDelay(unsigned short t)
 }
 void SerialRead()
 {
-  if (Serial.available() > 0)
+  if (ESPSerial.available() > 0)
   {
-    String event = Serial.readString();
+    String event = ESPSerial.readString();
     if (event == "setHumidity") WetlavelEditWifi();
-    else if (event == "setWateringMode") Serial.print(modeUpdate(oper_mode));
-    else if (event == "setsensoranAlysis") Serial.print(modeUpdate(analize_mode));
+    else if (event == "setWateringMode") ESPSerial.print(modeUpdate(oper_mode));
+    else if (event == "setsensoranAlysis") ESPSerial.print(modeUpdate(analize_mode));
+    else if (event == "systemCheck") Serial.print("truuue");
     else
     {
       Serial.println("this command does not exist");

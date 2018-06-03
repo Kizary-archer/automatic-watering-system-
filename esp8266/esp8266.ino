@@ -22,11 +22,12 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       }
       break;
     case WStype_TEXT:
-       Serial.printf("[%u] get Text: %s\n", num, payload);
+       //Serial.printf("[%u] get Text: %s\n", num, payload);
       StaticJsonBuffer<200> jsonBuffer;
       JsonObject& root = jsonBuffer.parseObject(payload);
-      Serial.println(root["event"].as<char*>());
-      Serial.write(root["data"].as<char*>());
+      Serial.print(root["event"].as<char*>());
+      delay(50);
+      Serial.print(root["data"].as<char*>());
       
       //webSocket.broadcastTXT("message here");
 
@@ -38,13 +39,19 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 void setup() {
   Serial.begin(9600);
 
+      Serial.setDebugOutput(true);
+
+    Serial.println();
+    Serial.println();
+    Serial.println();
+
   for (uint8_t t = 4; t > 0; t--) {
     Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
     Serial.flush();
     delay(1000);
   }
 
-
+WiFiMulti.addAP("dlink9321", "19311933af");
   while (WiFiMulti.run() != WL_CONNECTED) {
     delay(100);
   }
