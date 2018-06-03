@@ -25,10 +25,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
        //Serial.printf("[%u] get Text: %s\n", num, payload);
       StaticJsonBuffer<200> jsonBuffer;
       JsonObject& root = jsonBuffer.parseObject(payload);
-      Serial.print(root["event"].as<char*>());
-      delay(50);
-      Serial.print(root["data"].as<char*>());
-      
+      Serial.print(root["event"].as<char*>());     
       //webSocket.broadcastTXT("message here");
 
       break;

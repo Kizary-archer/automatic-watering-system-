@@ -5,6 +5,8 @@
 #include <MsTimer2.h>
 
 ////////////Settings///////////////
+#define RX 10;
+#define TX 11;
 #define WetsensorPower 8 //подача питания на датчик влажности
 #define WetlavelEditPower 7 //питание патенциометра
 #define Button 6 //кнопка режима настройки
@@ -53,6 +55,8 @@ void setup()
   pinMode(pomp, OUTPUT);
   pinMode(DispPower, OUTPUT);
   digitalWrite(DispPower, HIGH);
+  pinMode(10, INPUT);
+  pinMode(11, OUTPUT);
   Serial.begin(9600);
   ESPSerial.begin(9600);
   MsTimer2::set(100, SerialReadTimer); // задаем период прерывания по таймеру 100 мс
@@ -168,7 +172,7 @@ void WetlavelEditWifi ()
   }
   int val = ESPSerial.parseInt ();
   EEPROM.update(Wetlavelmin, val);
-  ESPSerial.print(val);
+  Serial.print(val);
 }
 bool modeUpdate(short value) // 0-каждый час , 1-каждый день
 {
@@ -198,20 +202,26 @@ void timerDelay(unsigned short t)
     if (currentMillis - ts > t)break;
   }
 }
+void test()
+{
+  Serial.print("setsensoranAlysis");
+}
 void SerialRead()
 {
   if (ESPSerial.available() > 0)
   {
-    String event = ESPSerial.readString();
-    if (event == "setHumidity") WetlavelEditWifi();
-    else if (event == "setWateringMode") ESPSerial.print(modeUpdate(oper_mode));
-    else if (event == "setsensoranAlysis") ESPSerial.print(modeUpdate(analize_mode));
-    else if (event == "systemCheck") Serial.print("truuue");
-    else
-    {
-      Serial.println("this command does not exist");
-      Serial.println("enter h for help");
-    }
+    
+     String event = ESPSerial.readString();
+     Serial.print(event);
+      if (event == "setHumidity") WetlavelEditWifi();
+      else if (event == "setWateringMode") Serial.print(modeUpdate(oper_mode));
+      else if (event == "setsensoranAlysis") Serial.print(modeUpdate(analize_mode));
+      else if (event == "systemCheck") test();
+      else
+      {
+       Serial.println("this command does not exist");
+       Serial.println("enter h for help");
+      }
   }
 }
 void SerialReadTimer()
