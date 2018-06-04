@@ -5,8 +5,8 @@
 #include <MsTimer2.h>
 
 ////////////Settings///////////////
-#define RX 10;
-#define TX 11;
+#define RX 10
+#define TX 11
 #define WetsensorPower 8 //подача питания на датчик влажности
 #define WetlavelEditPower 7 //питание патенциометра
 #define Button 6 //кнопка режима настройки
@@ -16,7 +16,7 @@
 #define Wetlavelnow 0 // датчик влажности
 TM1637 tm1637(3, 2); //Создаём объект класса TM1637, в качестве параметров передаём номера пинов подключения
 iarduino_RTC time(RTC_DS1307);
-SoftwareSerial ESPSerial(10, 11); // RX, TX
+SoftwareSerial ESPSerial(RX, TX); // RX, TX
 #define keeper 1008 //Сторож первого запуска
 #define countlog word(EEPROM.read(1010),EEPROM.read(1011)) // размер лога
 #define Wetlavelmin 1009 // минимальный уровень влажности
@@ -164,15 +164,16 @@ void WetlavelEditor ()
 
 void WetlavelEditWifi ()
 {
+  ESPSerial.print("@");
   unsigned long ts = millis();
   while (ESPSerial.available() == 0)
   {
     unsigned long currentMillis = millis();
     if (currentMillis - ts > 2000)break;
   }
-  int val = ESPSerial.parseInt ();
+  int val = ESPSerial.parseInt();
   EEPROM.update(Wetlavelmin, val);
-  Serial.print(val);
+  Serial.println(EEPROM.read(Wetlavelmin));
 }
 bool modeUpdate(short value) // 0-каждый час , 1-каждый день
 {
@@ -204,24 +205,24 @@ void timerDelay(unsigned short t)
 }
 void test()
 {
-  Serial.print("setsensoranAlysis");
+  Serial.println("$$$");
 }
 void SerialRead()
 {
   if (ESPSerial.available() > 0)
   {
-    
-     String event = ESPSerial.readString();
-     Serial.print(event);
-      if (event == "setHumidity") WetlavelEditWifi();
-      else if (event == "setWateringMode") Serial.print(modeUpdate(oper_mode));
-      else if (event == "setsensoranAlysis") Serial.print(modeUpdate(analize_mode));
-      else if (event == "systemCheck") test();
-      else
+
+    String event = ESPSerial.readString();
+    Serial.print(event);
+    if (event == "setHumidity") WetlavelEditWifi();
+    else if (event == "setWateringMode") Serial.println(modeUpdate(oper_mode));
+    else if (event == "setsensoranAlysis") Serial.println(modeUpdate(analize_mode));
+    else if (event == "systemCheck") test();
+    /*else
       {
-       Serial.println("this command does not exist");
-       Serial.println("enter h for help");
-      }
+      Serial.println("this command does not exist");
+      Serial.println("enter h for help");
+      }*/
   }
 }
 void SerialReadTimer()
