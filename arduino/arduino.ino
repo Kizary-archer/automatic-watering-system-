@@ -3,6 +3,7 @@
 #include "TM1637.h"
 #include <iarduino_RTC.h>
 #include <MsTimer2.h>
+#include <EasyTransfer.h>
 
 ////////////Settings///////////////
 #define RX 10
@@ -14,9 +15,6 @@
 #define DispPower 4 //питание дисплея
 #define WetlavelEdit 1 //потенциометр
 #define Wetlavelnow 0 // датчик влажности
-TM1637 tm1637(3, 2); //Создаём объект класса TM1637, в качестве параметров передаём номера пинов подключения
-iarduino_RTC time(RTC_DS1307);
-SoftwareSerial ESPSerial(RX, TX); // RX, TX
 #define keeper 1008 //Сторож первого запуска
 #define countlog word(EEPROM.read(1010),EEPROM.read(1011)) // размер лога
 #define Wetlavelmin 1009 // минимальный уровень влажности
@@ -30,6 +28,21 @@ SoftwareSerial ESPSerial(RX, TX); // RX, TX
 #define TimeSensorYearStart 1003 // Год в памяти
 #define TimeSensorHourLast 1004 //Час последней записи в памяти
 #define TimeSensorDayLast 1013 //день  последней записи в памяти
+
+TM1637 tm1637(3, 2); //Создаём объект класса TM1637, в качестве параметров передаём номера пинов подключения
+iarduino_RTC time(RTC_DS1307);
+SoftwareSerial ESPSerial(RX, TX); // RX, TX
+
+EasyTransfer ET;
+struct DATA_STRUCTURE {
+  long dateWatering;
+  int humidity;
+  bool automaticWatering;
+  bool autotesting;
+  bool sensorAnalysis;
+  bool wateringMode;
+};
+DATA_STRUCTURE data;
 
 void EEPROMwrite();
 void EEPROMread();
@@ -45,6 +58,7 @@ void SerialReadTimer();
 bool operating_mode();
 bool modeUpdate();
 void SerialRead();
+void initSend();
 
 void setup()
 {
@@ -59,6 +73,7 @@ void setup()
   pinMode(11, OUTPUT);
   Serial.begin(9600);
   ESPSerial.begin(9600);
+  ET.begin(details(data), &ESPSerial);
   MsTimer2::set(100, SerialReadTimer); // задаем период прерывания по таймеру 100 мс
   MsTimer2::start();
   time.begin();
@@ -192,6 +207,18 @@ bool modeUpdate(short value) // 0-каждый час , 1-каждый день
   EEPROM.update(value, bvalue);
   return bvalue;
 }
+void initSend()
+{
+  data.dateWatering = 453453453;
+  data.humidity = 60;
+  data.automaticWatering = 1;
+  data.autotesting = 1;
+  data.sensorAnalysis = 1;
+  data.wateringMode = 1;
+  delay(10);
+  ET.sendData();
+  delay(2000);
+}
 void watering ()
 {
   digitalWrite(pomp, HIGH);
@@ -234,6 +261,7 @@ void SerialRead()
     else if (event == "setWateringMode") Serial.println(modeUpdate(oper_mode));
     else if (event == "setsensorAnalysis") Serial.println(modeUpdate(analize_mode));
     else if (event == "dataHumidity") EEPROMread(20);
+    else if (event == "init") initSend();
     else if (event == "systemCheck") test();
     /*else
       {

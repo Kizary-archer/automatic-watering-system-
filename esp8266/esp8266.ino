@@ -5,7 +5,20 @@
 #include <ESP8266WiFiMulti.h>
 #include <WebSocketsServer.h>
 #include <Hash.h>
+#include <EasyTransfer.h>
 
+EasyTransfer ET;
+
+
+struct DATA_STRUCTURE {
+  long dateWatering;
+  int humidity;
+  bool automaticWatering;
+  bool autotesting;
+  bool sensorAnalysis;
+  bool wateringMode;
+};
+DATA_STRUCTURE sdata;
 ESP8266WiFiMulti WiFiMulti;
 
 WebSocketsServer webSocket = WebSocketsServer(81);
@@ -18,47 +31,25 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       break;
     case WStype_CONNECTED:
       {
+        Serial.print("init");
         JsonObject& initSend = jsonBuffer.createObject();
         initSend["event"] = "init";
         JsonObject& data = initSend.createNestedObject("data");
         JsonArray& dataHumidity = data.createNestedArray("dataHumidity");
         for (unsigned short i = 0; i < 20; i++)
-        dataHumidity.add(i);
-        /*Serial.print("dataHumidity");
-        unsigned long ts = millis();
-        while (Serial.available() == 0)
-        {
-          unsigned long currentMillis = millis();
-          if (currentMillis - ts > 1000)break;
+          dataHumidity.add(i);
+        delay(500);
+
+        if (ET.receiveData()) {
+          Serial.println(sdata.dateWatering);
+          data["dateWatering"] = sdata.dateWatering;
+          data["automaticWatering"] = sdata.automaticWatering;
+          data["autotesting"] = sdata.autotesting;
+          data["sensorAnalysis"] = sdata.sensorAnalysis;
+          data["wateringMode"] = sdata.wateringMode;
+          data["humidity"] = sdata.humidity;
         }
-        if (Serial.available() > 0)
-        {
-          int countlog = Serial.parseInt();
-          while (countlog)
-          {
-            ts = millis();
-            while (Serial.available() == 0)
-            {
-              unsigned long currentMillis = millis();
-              if (currentMillis - ts > 1000)break;
-            }
-            int val = Serial.parseInt();
-            dataHumidity.add(val);
-            Serial.print(val);
-            countlog--;
-          }
-        }*/
-
-
-
-
-        data["dateWatering"] = 1526381147614;
-        data["automaticWatering"] = true;
-        data["autotesting"] = true;
-        data["sensorAnalysis"] = true;
-        data["wateringMode"] = true;
         data["microcontroller"] = "Arduino";
-        data["humidity"] = 60;
         char JSONmessageBuffer[1024];
         initSend.printTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
         webSocket.sendTXT(num, JSONmessageBuffer);
@@ -70,7 +61,6 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       Serial.print(espSend["event"].as<char*>());
       delay(200);
       if (Serial.find('@')) Serial.write(espSend["data"].as<char*>());
-      //webSocket.broadcastTXT("message here");
 
       break;
   }
@@ -85,11 +75,11 @@ void setup() {
     Serial.flush();
   }
 
+  ET.begin(details(sdata), &Serial);
   WiFiMulti.addAP("dlink9321", "19311933af");
   while (WiFiMulti.run() != WL_CONNECTED) {
     delay(100);
   }
-
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
 }
