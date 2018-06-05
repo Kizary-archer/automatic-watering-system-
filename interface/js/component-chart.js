@@ -7,8 +7,8 @@
     let interval = 86400000;
     if (data.wateringMode) interval = 3600000;
 
-    data.dataHumidity.forEach((element, i) => {
-      series.push([data.dateWatering + (i * interval), element]);
+    data.dataHumidity.forEach((value, i) => {
+      series.push([data.dateWatering + (i * interval), value]);
     });
 
     return Highcharts.stockChart('containerChart', {
@@ -17,11 +17,6 @@
 
       rangeSelector: {
         buttons: [{
-          type: 'hour',
-          count: 3,
-          text: '3h',
-        },
-        {
           type: 'hour',
           count: 5,
           text: '5h',
@@ -101,5 +96,9 @@
       },
       true,
     );
+  };
+
+  window.updateChartData = function updateChartData(chart, data) {
+    chart.series[0].addPoint([Date.now(), data.dataHumidity[data.dataHumidity.length-1]], true, true);
   };
 }());
