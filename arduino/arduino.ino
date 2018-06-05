@@ -113,7 +113,18 @@ void EEPROMwrite()
 }
 void EEPROMread(unsigned short ind)
 {
-  for (unsigned short i = 0; i <= ind; i++) Serial.println(EEPROM.read(i));
+  ESPSerial.print(countlog);
+  for (unsigned short i = 0; i <= ind; i++)
+  {
+    unsigned long ts = millis();
+    ESPSerial.print(EEPROM.read(i));
+    while (ESPSerial.available() == 0)
+    {
+      unsigned long currentMillis = millis();
+      if (currentMillis - ts > 1000)break;
+    }
+    ESPSerial.read();
+  }
 }
 void reStart()
 {
@@ -169,7 +180,7 @@ void WetlavelEditWifi ()
   while (ESPSerial.available() == 0)
   {
     unsigned long currentMillis = millis();
-    if (currentMillis - ts > 2000)break;
+    if (currentMillis - ts > 1000)break;
   }
   int val = ESPSerial.parseInt();
   EEPROM.update(Wetlavelmin, val);
@@ -205,18 +216,24 @@ void timerDelay(unsigned short t)
 }
 void test()
 {
-  Serial.println("$$$");
+  for (unsigned short i = 0; i < 30; i++)
+  {
+    EEPROM.update(i, i);
+    Serial.println(i);
+  }
+  CountLogValue(25);
+
 }
 void SerialRead()
 {
   if (ESPSerial.available() > 0)
   {
-
     String event = ESPSerial.readString();
     Serial.print(event);
     if (event == "setHumidity") WetlavelEditWifi();
     else if (event == "setWateringMode") Serial.println(modeUpdate(oper_mode));
-    else if (event == "setsensoranAlysis") Serial.println(modeUpdate(analize_mode));
+    else if (event == "setsensorAnalysis") Serial.println(modeUpdate(analize_mode));
+    else if (event == "dataHumidity") EEPROMread(20);
     else if (event == "systemCheck") test();
     /*else
       {

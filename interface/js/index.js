@@ -15,7 +15,6 @@ const store = {
   autotesting: false,
   wateringMode: false,
   sensorAnalysis: false,
-  energySavingMode: false,
   automaticWatering: false,
   microcontroller: '',
 
@@ -72,7 +71,6 @@ function connect() {
         store.autotesting = message.data.autotesting;
         store.wateringMode = message.data.wateringMode;
         store.sensorAnalysis = message.data.sensorAnalysis;
-        store.energySavingMode = message.data.energySavingMode;
         store.microcontroller = message.data.microcontroller;
 
         renderText(store);
@@ -80,6 +78,16 @@ function connect() {
         renderRage(store);
         renderTimer(store);
         chart = renderChart(store);
+
+        console.log(chart.series[0]);
+
+        $('#loadingSend').hide();
+
+        break;
+      case 'newHumidity':
+        store.dataHumidity.push(message.data);
+        renderRage(store);
+        updateChartData(chart, store);
 
         break;
       default:
@@ -104,7 +112,7 @@ function updateRange() {
   updateChartPlotLines(chart, store);
 }
 function openDashboard() {
-  $('#loadingSend').hide();
+  $('#loadingSend').show();
   $('#loginCard').hide();
   $('#loadingConnect').hide();
   $('#dashboard').show();
@@ -196,7 +204,6 @@ function range() {
 function restart() {
   send('restart');
 }
-
 
 function disconnect() {
   socket.close();

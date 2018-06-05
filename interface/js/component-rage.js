@@ -11,7 +11,7 @@
         .css('width', `${(lastHumidity) * 1.25}%`);
       $('#progress-process')
         .removeClass('bg-danger')
-        .text(`${data.humidity - lastHumidity}`)
+        .text(`${data.humidity - lastHumidity} watered`)
         .css('width', `${(data.humidity - lastHumidity) * 1.25}%`);
     } else if (data.humidity - lastHumidity === 0) {
       $('#progress-comlete')
@@ -26,7 +26,7 @@
         .css('width', `${(data.humidity) * 1.25}%`);
       $('#progress-process')
         .addClass('bg-danger')
-        .text(`${data.humidity - lastHumidity}`)
+        .text(`${data.humidity - lastHumidity} wait`)
         .css('width', `${(lastHumidity - data.humidity) * 1.25}%`);
     }
   };

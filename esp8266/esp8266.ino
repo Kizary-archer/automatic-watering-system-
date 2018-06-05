@@ -11,23 +11,65 @@ ESP8266WiFiMulti WiFiMulti;
 WebSocketsServer webSocket = WebSocketsServer(81);
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
-
+  StaticJsonBuffer<1024> jsonBuffer;
   switch (type) {
     case WStype_DISCONNECTED:
       Serial.printf("[%u] Disconnected!\n", num);
       break;
     case WStype_CONNECTED:
       {
-        webSocket.sendTXT(num, "{\"event\":\"init\",\"data\":{\"dataHumidity\":[69,53,73,60,68,61,59,64,65,50,60,73,55,76,57,75,60,65,57,56,73,53,73,60,53,57,77,73,54,51,63,53,61,58,74,77,61,68,76,63,53,57,77,73,54,51,63,53,58,56,71,61,58,74,77,61,68,76,63,53,57,77,73,54,51,63,53,58,56,71,61,58,74,77,61,68,76,63,53,58,56,71,61,58,74,77,61,68,76,63,53,57,77,73,54,51,63,53,58,56,71,61,58,74,77,61,68,76,63,53,57,77,73,54,51,63,53,58,56,71,61,58,74,77,61,68,76,63,68,76,63,53,57,77,73,54,51,63,53,58,56,71,61,58,74,77,61,68,76,63,68,76,63,53,57,77,73,56,71,61,58,74,77,61,68,76,61,68,76],\"dateWatering\":1526381147614,\"autotesting\":false,\"wateringMode\":true,\"sensorAnalysis\":false,\"energySavingMode\":true,\"automaticWatering\":true,\"microcontroller\":\"Arduino ESP8266\",\"humidity\":55}}");
+        JsonObject& initSend = jsonBuffer.createObject();
+        initSend["event"] = "init";
+        JsonObject& data = initSend.createNestedObject("data");
+        JsonArray& dataHumidity = data.createNestedArray("dataHumidity");
+        for (unsigned short i = 0; i < 20; i++)
+        dataHumidity.add(i);
+        /*Serial.print("dataHumidity");
+        unsigned long ts = millis();
+        while (Serial.available() == 0)
+        {
+          unsigned long currentMillis = millis();
+          if (currentMillis - ts > 1000)break;
+        }
+        if (Serial.available() > 0)
+        {
+          int countlog = Serial.parseInt();
+          while (countlog)
+          {
+            ts = millis();
+            while (Serial.available() == 0)
+            {
+              unsigned long currentMillis = millis();
+              if (currentMillis - ts > 1000)break;
+            }
+            int val = Serial.parseInt();
+            dataHumidity.add(val);
+            Serial.print(val);
+            countlog--;
+          }
+        }*/
+
+
+
+
+        data["dateWatering"] = 1526381147614;
+        data["automaticWatering"] = true;
+        data["autotesting"] = true;
+        data["sensorAnalysis"] = true;
+        data["wateringMode"] = true;
+        data["microcontroller"] = "Arduino";
+        data["humidity"] = 60;
+        char JSONmessageBuffer[1024];
+        initSend.printTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
+        webSocket.sendTXT(num, JSONmessageBuffer);
       }
       break;
     case WStype_TEXT:
       //Serial.printf("[%u] get Text: %s\n", num, payload);
-      StaticJsonBuffer<200> jsonBuffer;
-      JsonObject& root = jsonBuffer.parseObject(payload);
-      Serial.print(root["event"].as<char*>());
+      JsonObject& espSend = jsonBuffer.parseObject(payload);
+      Serial.print(espSend["event"].as<char*>());
       delay(200);
-      if (Serial.find('@')) Serial.write(root["data"].as<char*>());
+      if (Serial.find('@')) Serial.write(espSend["data"].as<char*>());
       //webSocket.broadcastTXT("message here");
 
       break;
@@ -38,16 +80,9 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 void setup() {
   Serial.begin(9600);
 
-  Serial.setDebugOutput(true);
-
-  Serial.println();
-  Serial.println();
-  Serial.println();
-
   for (uint8_t t = 4; t > 0; t--) {
     Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
     Serial.flush();
-    delay(1000);
   }
 
   WiFiMulti.addAP("dlink9321", "19311933af");

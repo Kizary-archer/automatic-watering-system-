@@ -92,7 +92,7 @@
 
         <div class="row">
           <div class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-12">
-            <p id="timer" class="text-center display-5" style="white-space: nowrap;"></p>
+            <p id="timer" class="text-center display-6" style="white-space: nowrap;"></p>
           </div>
           <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-12">
             <div class="progress progress-info">
@@ -138,19 +138,9 @@
               </div>
 
               <div class="input-group">
-                <label for="energySavingMode" class="switch-label" >
+                <label for="sensorAnalysis" class="switch-label" >
                   <div class="switch">
-                    <input type="checkbox" id="energySavingMode" style="display: none;"  onclick="switchCheckbox('energySavingMode')">
-                    <span class="switch-slider round"></span>
-                  </div>
-                  Energy saving mode
-                </label>
-              </div>
-
-              <div class="input-group">
-                <label for="sensoranAlysis" class="switch-label" >
-                  <div class="switch">
-                    <input type="checkbox" id="sensoranAlysis" style="display: none;" onclick="switchCheckbox('sensoranAlysis')">
+                    <input type="checkbox" id="sensorAnalysis" style="display: none;" onclick="switchCheckbox('sensorAnalysis')">
                     <span class="switch-slider round"></span>
                   </div>
                   Sensor analysis
@@ -193,10 +183,8 @@
           <script src="./node_modules/jquery/dist/jquery.js"></script>
           <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script>
           <script src="./node_modules/highcharts/highstock.js"></script>
-
+          <script src="./node_modules/bootbox/bootbox.min.js"></script>
           <script src="./libs/ipInput.min.js"></script>
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
-
           <script src="./js/component-chart.js"></script>
           <script src="./js/component-checkbox.js"></script>
           <script src="./js/component-error-alert.js"></script>
