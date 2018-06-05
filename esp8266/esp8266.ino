@@ -76,7 +76,7 @@ void setup() {
   }
 
   ET.begin(details(sdata), &Serial);
-  WiFiMulti.addAP("dlink9321", "19311933af");
+  WiFiMulti.addAP("qwe", "qwe");
   while (WiFiMulti.run() != WL_CONNECTED) {
     delay(100);
   }

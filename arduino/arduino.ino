@@ -253,6 +253,19 @@ EEPROM.update(1016,24);
   return 1;
 
 }
+void help() 
+{ 
+  Serial.println("****** HELP ******"); 
+  Serial.println("setWateringMode - установка режима полива"); 
+  Serial.println("setsensorAnalysis - проверка работоспособности датчика влажности"); 
+  Serial.println("setAutomaticWatering - установка автоматического полива"); 
+  Serial.println("setautotesting - автотестирование работоспособности Arduino"); 
+  Serial.println("restart - Restart"); 
+  Serial.println("systemCheck - тестирование работоспособности Arduino"); 
+  Serial.println("A - Wet analize"); 
+  Serial.println("W - PompActivate"); 
+}
+ 
 void SerialRead()
 {
   if (ESPSerial.available() > 0)
@@ -266,6 +279,7 @@ void SerialRead()
     else if (event == "setautotesting") ESPSerial.println(modeUpdate(test_mode));
     else if (event == "dataHumidity") EEPROMread(countlog);
     else if (event == "init") initSend();
+    else if (event == "restart") resetFunc();
     else if (event == "systemCheck") test();
   }
 }
