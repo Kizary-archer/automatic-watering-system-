@@ -19,8 +19,9 @@
 #define countlog word(EEPROM.read(1010),EEPROM.read(1011)) // размер лога
 #define Wetlavelmin 1009 // минимальный уровень влажности
 #define oper_mode 1012 //режим работы (час,день)
+#define test_mode 1014 //режим работы (час,день)
 #define analize_mode 1005
-
+#define autowet_mode 1015
 //дата начала измерений
 #define TimeSensorHourStart 1000 //Час в памяти
 #define TimeSensorDaysStart 1001 //День в памяти
@@ -59,6 +60,7 @@ bool operating_mode();
 bool modeUpdate();
 void SerialRead();
 void initSend();
+bool test();
 
 void setup()
 {
@@ -107,7 +109,7 @@ void loop()
     digitalWrite(WetsensorPower, HIGH);
     timerDelay(2000);
     if (map (analogRead(Wetlavelnow), 0, 1023, 0, 100) < EEPROM.read(Wetlavelmin))
-      if (analize() && operating_mode())
+      if (analize() && operating_mode()&& EEPROM.read(autowet_mode))
         watering (); //полив
     EEPROMwrite();
     digitalWrite(WetsensorPower, LOW);
@@ -209,15 +211,14 @@ bool modeUpdate(short value) // 0-каждый час , 1-каждый день
 }
 void initSend()
 {
-  data.dateWatering = 453453453;
-  data.humidity = 60;
-  data.automaticWatering = 1;
-  data.autotesting = 1;
-  data.sensorAnalysis = 1;
-  data.wateringMode = 1;
-  delay(10);
+  data.dateWatering = 1526381147614;
+  data.humidity = EEPROM.read(Wetlavelmin);
+  data.automaticWatering = EEPROM.read(Wetlavelmin);
+  data.autotesting = EEPROM.read(test_mode);
+  data.sensorAnalysis = EEPROM.read(analize_mode);
+  data.wateringMode = EEPROM.read(oper_mode);
   ET.sendData();
-  delay(2000);
+  delay(500);
 }
 void watering ()
 {
@@ -241,14 +242,15 @@ void timerDelay(unsigned short t)
     if (currentMillis - ts > t)break;
   }
 }
-void test()
+bool test()
 {
-  for (unsigned short i = 0; i < 30; i++)
-  {
-    EEPROM.update(i, i);
-    Serial.println(i);
-  }
-  CountLogValue(25);
+if (EEPROM.read(test_mode))
+{
+EEPROM.update(1016,24);
+    if (EEPROM.read(1016) == 24)return 1;
+    else return 0;
+}
+  return 1;
 
 }
 void SerialRead()
@@ -258,19 +260,27 @@ void SerialRead()
     String event = ESPSerial.readString();
     Serial.print(event);
     if (event == "setHumidity") WetlavelEditWifi();
-    else if (event == "setWateringMode") Serial.println(modeUpdate(oper_mode));
-    else if (event == "setsensorAnalysis") Serial.println(modeUpdate(analize_mode));
-    else if (event == "dataHumidity") EEPROMread(20);
+    else if (event == "setWateringMode") {ESPSerial.println(modeUpdate(oper_mode));reStart();}
+    else if (event == "setsensorAnalysis") ESPSerial.println(modeUpdate(analize_mode));
+    else if (event == "setAutomaticWatering") ESPSerial.println(modeUpdate(autowet_mode));
+    else if (event == "setautotesting") ESPSerial.println(modeUpdate(test_mode));
+    else if (event == "dataHumidity") EEPROMread(countlog);
     else if (event == "init") initSend();
     else if (event == "systemCheck") test();
-    /*else
-      {
-      Serial.println("this command does not exist");
-      Serial.println("enter h for help");
-      }*/
   }
 }
 void SerialReadTimer()
 {
   if (digitalRead(Button) == LOW) WetlavelEditor();
+  if (Serial.available() > 0)
+  {
+    String event = Serial.read();
+    Serial.print(event);
+    if (event == 'h') help();
+    else
+      {
+      Serial.println("this command does not exist");
+      Serial.println("enter h for help");
+      }
+}
 }
